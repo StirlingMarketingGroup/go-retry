@@ -35,7 +35,7 @@ func RandInt(min, max int) (int, error) {
 
 // Retry tries to execute a function with "retries"+1 times until it's succeeded
 func Retry(main func() error, retries int, afterTryFailure func() error, beforeRetry func() error) error {
-	var err error
+	var mainErr error
 
 	if main == nil {
 		return fmt.Errorf("the main function to try can't be nil")
@@ -43,17 +43,17 @@ func Retry(main func() error, retries int, afterTryFailure func() error, beforeR
 
 	for i := 0; i <= retries; i++ {
 		if i != 0 && beforeRetry != nil {
-			err = beforeRetry()
+			err := beforeRetry()
 			if err != nil {
 				return err
 			}
 		}
-		err = main()
-		if err == nil {
+		mainErr = main()
+		if mainErr == nil {
 			break
 		}
 		if afterTryFailure != nil {
-			err = afterTryFailure()
+			err := afterTryFailure()
 			if err != nil {
 				return err
 			}
@@ -66,5 +66,5 @@ func Retry(main func() error, retries int, afterTryFailure func() error, beforeR
 		time.Sleep(time.Duration(wait) * time.Millisecond)
 	}
 
-	return err
+	return mainErr
 }
