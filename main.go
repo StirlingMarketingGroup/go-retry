@@ -60,6 +60,9 @@ func Retry(main func() error, retries int, afterTryFailure func(error) error, be
 				return fmt.Errorf("retry after function: %s", err)
 			}
 		}
+		if i == retries {
+			break
+		}
 		n, err := RandInt(-2, 5)
 		if err != nil {
 			return fmt.Errorf("retry rand: %s", err)
