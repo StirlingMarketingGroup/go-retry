@@ -63,11 +63,11 @@ func Retry(main func() error, retries int, afterTryFailure func(error) error, be
 		if i == retries {
 			break
 		}
-		n, err := RandInt(-2, 5)
+		n, err := RandInt(-500, 1000)
 		if err != nil {
 			return fmt.Errorf("retry rand: %s", err)
 		}
-		wait := Min(15000, Max(i*750, i+n*100))
+		wait := Min(15000, i*750) + n
 		time.Sleep(time.Duration(wait) * time.Millisecond)
 	}
 
