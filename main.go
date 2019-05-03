@@ -33,6 +33,15 @@ func RandInt(min, max int) (int, error) {
 	return int(nBig.Int64()) + min, nil
 }
 
+// PermFail tells the retry function to not retry regardless of retries remaining
+type PermFail struct {
+	Err error
+}
+
+func (re PermFail) Error() string {
+	return re.Error()
+}
+
 // Retry tries to execute a function with "retries"+1 times until it's succeeded
 func Retry(main func() error, retries int, afterTryFailure func(error) error, beforeRetry func() error) error {
 	var mainErr error
@@ -52,6 +61,11 @@ func Retry(main func() error, retries int, afterTryFailure func(error) error, be
 		mainErr = main()
 		if mainErr == nil {
 			break
+		} else {
+			if re, ok := mainErr.(*PermFail); ok {
+				mainErr = re.Err
+				break
+			}
 		}
 
 		if afterTryFailure != nil {
