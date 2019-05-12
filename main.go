@@ -42,6 +42,15 @@ func (re PermFail) Error() string {
 	return re.Error()
 }
 
+// NoFail tells the retry function to not increment the retry count
+type NoFail struct {
+	Err error
+}
+
+func (re NoFail) Error() string {
+	return re.Error()
+}
+
 // Retry tries to execute a function with "retries"+1 times until it's succeeded
 func Retry(main func() error, retries int, afterTryFailure func(error) error, beforeRetry func() error) error {
 	var mainErr error
@@ -61,11 +70,13 @@ func Retry(main func() error, retries int, afterTryFailure func(error) error, be
 		mainErr = main()
 		if mainErr == nil {
 			break
-		} else {
-			if re, ok := mainErr.(*PermFail); ok {
-				mainErr = re.Err
-				break
-			}
+		} else if _, ok := mainErr.(*NoFail); ok {
+			i--
+			mainErr = nil
+			continue
+		} else if re, ok := mainErr.(*PermFail); ok {
+			mainErr = re.Err
+			break
 		}
 
 		if afterTryFailure != nil {
